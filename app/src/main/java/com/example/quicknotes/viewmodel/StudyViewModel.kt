@@ -6,23 +6,30 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quicknotes.data.AppDatabase
+import com.example.quicknotes.data.remote.UsageRemoteDataSource
 import com.example.quicknotes.data.repository.StudyRepositoryImpl
 import com.example.quicknotes.data.repository.QuizRepositoryImpl
 import com.example.quicknotes.data.repository.AiRepositoryImpl
+import com.example.quicknotes.data.repository.UsageRepositoryImpl
 import com.example.quicknotes.domain.model.StudyHistory
 import com.example.quicknotes.domain.model.QuizHistory
 import com.example.quicknotes.domain.model.StudyNotes
-import com.example.quicknotes.domain.model.Mcq
 import com.example.quicknotes.domain.repository.StudyRepository
 import com.example.quicknotes.domain.repository.QuizRepository
 import com.example.quicknotes.domain.repository.AiRepository
+import com.example.quicknotes.domain.repository.UsageRepository
+import com.example.quicknotes.domain.usecase.CheckUsageLimitUseCase
+import com.example.quicknotes.domain.usecase.IncrementUsageUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed class UiState {
     object Idle : UiState()
@@ -31,18 +38,30 @@ sealed class UiState {
     data class Error(val message: String) : UiState()
 }
 
-class StudyViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val db = AppDatabase.getDatabase(application)
-    private val studyRepo: StudyRepository = StudyRepositoryImpl(db.studyDao())
-    private val quizRepo: QuizRepository = QuizRepositoryImpl(db.quizHistoryDao())
-    private val aiRepo: AiRepository = AiRepositoryImpl()
+@HiltViewModel
+class StudyViewModel @Inject constructor(
+    private val studyRepo: StudyRepository,
+    private val quizRepo: QuizRepository,
+    private val aiRepo: AiRepository,
+    private val usageRepository: UsageRepository
+) : ViewModel() {
 
     val historyList = studyRepo.getAllHistory()
     val quizHistoryList = quizRepo.getAllQuizHistory()
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+
+    private val checkUsageLimitUseCase =
+        CheckUsageLimitUseCase(usageRepository)
+
+    private val incrementUsageUseCase =
+        IncrementUsageUseCase(usageRepository)
+
+    private val _remainingUsage = MutableStateFlow<Long?>(null)
+
+    val remainingUsage = _remainingUsage.asStateFlow()
 
     var lastInputText: String = ""
     var lastLevelText: String = ""
@@ -55,6 +74,13 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
         lastLevelText = educationLevel
 
         viewModelScope.launch {
+            if (!checkUsageLimitUseCase()) {
+
+                _uiState.value =
+                    UiState.Error("Free limit reached")
+
+                return@launch
+            }
             _uiState.value = UiState.Loading
 
             try {
@@ -63,6 +89,8 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
                 if (notes == null) {
                     _uiState.value = UiState.Error("Empty response received from AI. Please refresh your input.")
                 } else {
+                    incrementUsageUseCase()
+                    loadRemainingUsage()
                     _uiState.value = UiState.Success(notes)
 
                     chatHistory.clear()
@@ -121,7 +149,7 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (e: Exception) {
                 Log.e("DOUBT_ERROR", "Ask Doubt Failed", e)
-                onResult("Error: ${e.localizedMessage ?: "Something went wrong"}")
+                onResult("Error: Server is too busy currently, please try again later after some time.")
             }
         }
     }
@@ -163,6 +191,23 @@ class StudyViewModel(application: Application) : AndroidViewModel(application) {
                 Log.e("MCQ_REFRESH_ERROR", "Refresh MCQs Failed", e)
             }
         }
+    }
+
+    fun loadRemainingUsage() {
+
+        viewModelScope.launch {
+
+            _remainingUsage.value =
+                usageRepository.getRemainingUsage()
+        }
+    }
+
+    fun clearSession() {
+        _uiState.value = UiState.Idle
+        chatHistory.clear()
+        lastInputText = ""
+        lastLevelText = ""
+        lastMcqDifficulty = "Medium"
     }
 
     fun loadHistoryNotes(notes: StudyNotes) {

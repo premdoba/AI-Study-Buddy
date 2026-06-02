@@ -25,7 +25,10 @@ import com.example.quicknotes.ui.AppNavigation
 import com.example.quicknotes.ui.theme.QuickNotesTheme
 import com.example.quicknotes.viewmodel.StudyViewModel
 import com.example.quicknotes.viewmodel.TodoViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.hilt.navigation.compose.hiltViewModel
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val requestPermissionLauncher = registerForActivityResult(

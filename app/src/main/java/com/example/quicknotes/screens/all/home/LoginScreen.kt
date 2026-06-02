@@ -28,6 +28,8 @@
     import com.google.android.gms.common.api.ApiException
     import com.google.firebase.auth.GoogleAuthProvider
     import com.google.firebase.auth.ktx.auth
+    import com.google.firebase.firestore.FirebaseFirestore
+    import com.google.firebase.firestore.SetOptions
     import com.google.firebase.ktx.Firebase
 
     @Composable
@@ -82,6 +84,19 @@
                         isLoading = false
 
                         if (it.isSuccessful) {
+
+                            val user = auth.currentUser ?: return@addOnCompleteListener
+
+                            FirebaseFirestore.getInstance()
+                                .collection("users")
+                                .document(user.uid)
+                                .set(
+                                    mapOf(
+                                        "email" to user.email
+                                    ),
+                                    SetOptions.merge()
+                                )
+
 
                             navController.navigate(Routes.Generate.route) {
                                 popUpTo(Routes.Login.route) {
@@ -222,6 +237,19 @@
                                 isLoading = false
 
                                 if (it.isSuccessful) {
+
+                                    val user = auth.currentUser ?: return@addOnCompleteListener
+
+                                    FirebaseFirestore.getInstance()
+                                        .collection("users")
+                                        .document(user.uid)
+                                        .set(
+                                            mapOf(
+                                                "email" to user.email
+                                            ),
+                                            SetOptions.merge()
+                                        )
+
 
                                     navController.navigate(Routes.Generate.route) {
                                         popUpTo(Routes.Login.route) {

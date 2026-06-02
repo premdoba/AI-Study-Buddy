@@ -2,19 +2,21 @@ package com.example.quicknotes.settings
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quicknotes.data.repository.SettingsRepositoryImpl
 import com.example.quicknotes.domain.repository.SettingsRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SettingsViewModel(
-    application: Application
-) : AndroidViewModel(application) {
-
-    private val manager = SettingsManager(application)
-    private val repository: SettingsRepository = SettingsRepositoryImpl(manager)
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    private val repository: SettingsRepository
+) : ViewModel()
+{
 
     val education =
         repository.educationFlow.stateIn(

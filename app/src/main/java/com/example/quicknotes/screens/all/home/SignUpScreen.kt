@@ -203,7 +203,7 @@ fun SignupScreen(navController: NavController) {
                                     Toast.LENGTH_SHORT
                                 ).show()
 
-                                navController.navigate(Routes.Generate.route) {
+                                navController.navigate(Routes.Login.route) {
                                     popUpTo(Routes.Login.route) {
                                         inclusive = true
                                     }

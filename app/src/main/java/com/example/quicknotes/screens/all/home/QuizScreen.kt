@@ -10,6 +10,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -152,27 +153,45 @@ fun QuizScreen(navController: NavController, vm: StudyViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    mcq.options.forEach { option ->
+                        mcq.options.forEach { option ->
 
-                        val cleanOption = option.substringAfter(")").trim()
+                            val cleanOption = option.substringAfter(")").trim()
+                            val isSelected = selectedAnswers[currentIndex] == option
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            RadioButton(
-                                selected = selectedAnswers[currentIndex] == option,
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
                                 onClick = {
                                     selectedAnswers =
                                         selectedAnswers + (currentIndex to option)
+                                },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.Transparent
+                                )
+                            ) {
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+
+                                    RadioButton(
+                                        selected = isSelected,
+                                        onClick = null
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(
+                                        text = cleanOption,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
                                 }
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Text(cleanOption)
+                            }
                         }
-                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
 

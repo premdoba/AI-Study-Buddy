@@ -105,7 +105,7 @@ class AiRepositoryImpl : AiRepository {
                 val response = generativeModel.generateContent(prompt)
                 response.text ?: ""
             } catch (e: Exception) {
-                "Error: ${e.localizedMessage ?: "Something went wrong"}"
+                "Error: Server is too busy, please try again after some time."
             }
         }
     }

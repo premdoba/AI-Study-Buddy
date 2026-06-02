@@ -1,26 +1,29 @@
 package com.example.quicknotes.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.quicknotes.data.AppDatabase
 import com.example.quicknotes.data.repository.TodoRepositoryImpl
 import com.example.quicknotes.domain.model.Todo
 import com.example.quicknotes.domain.repository.TodoRepository
 import com.example.quicknotes.notification.ReminderScheduler
+import dagger.hilt.android.internal.Contexts.getApplication
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class TodoViewModel(
-    application: Application
-) : AndroidViewModel(application) {
-
-    private val dao =
-        AppDatabase.getDatabase(application).todoDao()
-
-    private val repo: TodoRepository = TodoRepositoryImpl(dao)
-
+@HiltViewModel
+class TodoViewModel @Inject constructor(
+    private val repo: TodoRepository,
+    @ApplicationContext private val context: Context
+) : ViewModel()
+{
     val todos = repo.getAllTodos().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -32,7 +35,7 @@ class TodoViewModel(
             val insertedId = repo.insertTodo(todo)
             todo.reminderTime?.let { reminderTime ->
                 ReminderScheduler.scheduleReminder(
-                    context = getApplication<Application>(),
+                    context = context,
                     taskId = insertedId.toInt(),
                     title = todo.title,
                     timeInMillis = reminderTime

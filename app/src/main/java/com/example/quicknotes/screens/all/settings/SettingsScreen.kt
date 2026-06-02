@@ -106,6 +106,8 @@ fun SettingsScreen(
                     FirebaseAuth.getInstance().signOut()
                     googleSignInClient.signOut()
 
+                    vm2.clearSession()
+
                     navController.navigate(Routes.Login.route) {
                         popUpTo(0)
                         launchSingleTop = true
@@ -343,8 +345,8 @@ fun SettingsScreen(
 
                         icon = {
                             Icon(
-                                painter = painterResource(R.drawable.baseline_history),
-                                contentDescription = "History"
+                                painter = painterResource(R.drawable.outline_download_24),
+                                contentDescription = "Downloads"
                             )
                         },
 

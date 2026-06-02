@@ -226,11 +226,11 @@ fun HistoryScreen(navController: NavController, vm: StudyViewModel) {
 
                     NavigationRailItem(
                         selected = true,
-                        onClick = {},
+                        onClick = { navController.navigate(Routes.Downloads.route)},
                         icon = {
                             Icon(
-                                painter = painterResource(R.drawable.baseline_history),
-                                contentDescription = "History"
+                                painter = painterResource(R.drawable.outline_download_24),
+                                contentDescription = "Downloads"
                             )
                         },
                         label = { Text("History") },

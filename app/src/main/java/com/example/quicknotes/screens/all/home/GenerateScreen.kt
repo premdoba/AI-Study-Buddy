@@ -3,6 +3,7 @@ package com.example.quicknotes.ui.screens
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import androidx.compose.material3.AlertDialog
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.BackHandler
@@ -51,6 +52,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -111,6 +113,8 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
         mutableStateOf(defaultEducation)
     }
 
+    val remainingUsage by vm.remainingUsage.collectAsState()
+
     var mcqDifficulty by remember(defaultMcq) {
         mutableStateOf(defaultMcq)
     }
@@ -123,6 +127,10 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
     var doubtAnswer by remember { mutableStateOf("") }
 
     val state by vm.uiState.collectAsState()
+
+    var showLimitInfo by remember {
+        mutableStateOf(false)
+    }
 
     val notificationPermissionLauncher =
         rememberLauncherForActivityResult(
@@ -148,6 +156,10 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
 
             else -> {}
         }
+    }
+
+    LaunchedEffect(Unit) {
+        vm.loadRemainingUsage()
     }
 
     val gradient = Brush.verticalGradient(
@@ -263,6 +275,53 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
         activity?.finish()
     }
 
+    if (showLimitInfo) {
+
+        AlertDialog(
+            onDismissRequest = {
+                showLimitInfo = false
+            },
+
+            title = {
+                Text("Free Usage Limit")
+            },
+
+            text = {
+
+                Column {
+
+                    Text(
+                        "You currently have $remainingUsage free generations remaining."
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
+                    Text(
+                        "• Free users get 3 note generations per day.\n\n" +
+                                "• Each study material generation uses 1 credit.\n\n" +
+                                "• After reaching the limit, you can still access all previously generated notes from Downloads.\n\n" +
+                                "• You can continue generating MCQ quizzes from saved notes in Downloads.\n\n" +
+                                "• You can continue asking doubts and chatting with AI using your previously generated notes.\n\n" +
+                                "• Your saved notes and quizzes are not affected by the daily limit."
+                    )
+                }
+            },
+
+            confirmButton = {
+
+                TextButton(
+                    onClick = {
+                        showLimitInfo = false
+                    }
+                ) {
+                    Text("Got it")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -280,6 +339,48 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                     }
+                },
+                actions = {
+
+                    Card(
+                        onClick = {
+                            showLimitInfo = true
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+
+                        Row(
+                            modifier = Modifier.padding(
+                                horizontal = 12.dp,
+                                vertical = 6.dp
+                            ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Text(
+                                text = "🪙",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+
+                            Spacer(
+                                modifier = Modifier.width(4.dp)
+                            )
+
+                            Text(
+                                text = remainingUsage?.toString() ?: "...",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+
+                    Spacer(
+                        modifier = Modifier.width(12.dp)
+                    )
                 }
             )
         },
@@ -473,11 +574,11 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
                         onClick = { navController.navigate(Routes.Downloads.route) },
                         icon = {
                             Icon(
-                                painter = painterResource(R.drawable.baseline_history),
-                                contentDescription = "History"
+                                painter = painterResource(R.drawable.outline_download_24),
+                                contentDescription = "Downloads"
                             )
                         },
-                        label = { Text("History") },
+                        label = { Text("Downlods") },
                         colors = NavigationRailItemDefaults.colors(
 
                             selectedIconColor = MaterialTheme.colorScheme.onPrimary,
@@ -859,9 +960,12 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
                         }
 
                         is UiState.Error -> {
+                            val errorState = state as UiState.Error
 
                             val msg =
-                                if (!vm.isInternetAvailable(context)) {
+                                if (errorState.message == "Free limit reached") {
+                                    "Daily free usage limit reached. You can generate up to 3 notes per day. Please try again tomorrow."
+                                } else if (!vm.isInternetAvailable(context)) {
                                     "No internet connection detected. Please check your network and try again."
                                 } else {
                                     "We're receiving too many requests right now. Please try again after some time."
