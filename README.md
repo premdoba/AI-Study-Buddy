@@ -389,34 +389,6 @@ Used for:
 
 ---
 
-# 🛠 Installation
-
-```bash
-git clone https://github.com/premdoba/Quick-Notes-AI.git
-```
-
-Open in **Android Studio**.
-
-Add your Firebase configuration:
-
-```
-google-services.json
-```
-
-Add your Gemini API Key in:
-
-```
-local.properties
-```
-
-```
-GEMINI_API_KEY=YOUR_API_KEY
-```
-
-Run the project.
-
----
-
 # 🤝 Contributing
 
 Contributions are always welcome.
