@@ -1,0 +1,9 @@
+package com.nextgendevs.quicknotes.domain.model
+
+data class SavedQuiz(
+    val question: String,
+    val options: List<String>,
+    val answer: String,
+    val explanation: String,
+    val selectedAnswer: String?
+)

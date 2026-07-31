@@ -21,11 +21,11 @@ if (localPropertiesFile.exists()) {
 val geminiApiKey = localProperties.getProperty("API_KEY") ?: ""
 
 android {
-    namespace = "com.example.quicknotes"
+    namespace = "com.nextgendevs.quicknotes"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.quicknotes"
+        applicationId = "com.nextgendevs.quicknotes"
 
         minSdk = 24
         targetSdk = 36
