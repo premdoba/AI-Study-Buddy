@@ -533,7 +533,20 @@ fun SettingsScreen(
                         title = "Rate App",
                         subtitle = "Support us on Play Store",
                         onClick = {
-
+                            try {
+                                val intent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("market://details?id=com.nextgendevs.quicknotes")
+                                )
+                                intent.setPackage("com.android.vending")
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                val intent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("https://play.google.com/store/apps/details?id=com.nextgendevs.quicknotes")
+                                )
+                                context.startActivity(intent)
+                            }
                         }
                     )
 
