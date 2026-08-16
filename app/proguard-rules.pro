@@ -19,3 +19,14 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep model classes
+-keep class com.nextgendevs.quicknotes.domain.model.** { *; }
+-keep class com.nextgendevs.quicknotes.data.model.** { *; }
+
+# Preserve generic signatures
+-keepattributes Signature
+
+# Prevent R8 from stripping Gson's TypeToken generic types
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken

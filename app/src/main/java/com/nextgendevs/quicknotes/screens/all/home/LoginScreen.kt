@@ -1,6 +1,8 @@
     package com.nextgendevs.quicknotes.ui.screens
 
     import android.app.Activity
+    import android.content.ContentValues.TAG
+    import android.util.Log
     import android.widget.Toast
     import androidx.activity.compose.rememberLauncherForActivityResult
     import androidx.activity.result.contract.ActivityResultContracts
@@ -62,6 +64,7 @@
 
             GoogleSignIn.getClient(context, gso)
         }
+        Log.d(TAG, "Web Client ID = ${webClientId}")
 
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartActivityForResult()
@@ -271,77 +274,83 @@
                         enabled = !isLoading,
                         shape = RoundedCornerShape(14.dp)
                     ) {
-
-                        Text("Sign In")
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "OR",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedButton(
-                        onClick = {
-
-                            isLoading = true
-
-                            val signInIntent =
-                                googleSignInClient.signInIntent
-
-                            launcher.launch(signInIntent)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        enabled = !isLoading,
-                        shape = RoundedCornerShape(16.dp),
-
-                        border = BorderStroke(
-                            1.5.dp,
-                            Color(0xFF00D9FF)
-                        ),
-
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
-                    ) {
-
                         if (isLoading) {
-
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
                                 strokeWidth = 2.dp
                             )
-
                         } else {
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-
-                                Text(
-                                    text = "G",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Text(
-                                    text = "Continue with Google",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
+                            Text("Sign In")
                         }
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+//                    Text(
+//                        text = "OR",
+//                        style = MaterialTheme.typography.bodyMedium
+//                    )
+//
+//                    Spacer(modifier = Modifier.height(16.dp))
+//
+//                    OutlinedButton(
+//                        onClick = {
+//
+//                            isLoading = true
+//
+//                            val signInIntent =
+//                                googleSignInClient.signInIntent
+//
+//                            launcher.launch(signInIntent)
+//                        },
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(56.dp),
+//                        enabled = !isLoading,
+//                        shape = RoundedCornerShape(16.dp),
+//
+//                        border = BorderStroke(
+//                            1.5.dp,
+//                            Color(0xFF00D9FF)
+//                        ),
+//
+//                        colors = ButtonDefaults.outlinedButtonColors(
+//                            containerColor = MaterialTheme.colorScheme.surface
+//                        )
+//                    ) {
+//
+//                        if (isLoading) {
+//
+//                            CircularProgressIndicator(
+//                                modifier = Modifier.size(20.dp),
+//                                strokeWidth = 2.dp
+//                            )
+//
+//                        } else {
+//
+//                            Row(
+//                                verticalAlignment = Alignment.CenterVertically,
+//                                horizontalArrangement = Arrangement.Center
+//                            ) {
+//
+//                                Text(
+//                                    text = "G",
+//                                    style = MaterialTheme.typography.titleMedium,
+//                                    fontWeight = FontWeight.Bold,
+//                                    color = MaterialTheme.colorScheme.primary
+//                                )
+//
+//                                Spacer(modifier = Modifier.width(12.dp))
+//
+//                                Text(
+//                                    text = "Continue with Google",
+//                                    style = MaterialTheme.typography.bodyLarge,
+//                                    fontWeight = FontWeight.Medium
+//                                )
+//                            }
+//                        }
+//                    }
+//                    Spacer(modifier = Modifier.height(20.dp))
 
                     TextButton(
                         onClick = {

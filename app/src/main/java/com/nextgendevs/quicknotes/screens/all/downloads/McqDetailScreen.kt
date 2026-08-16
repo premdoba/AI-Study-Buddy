@@ -35,7 +35,11 @@ fun McqDetailScreen(
 
     val data = quiz!!
     val type = object : TypeToken<List<SavedQuiz>>() {}.type
-    val mcqList: List<SavedQuiz> = Gson().fromJson(data.quizJson, type)
+    val mcqList = try {
+        Gson().fromJson<List<SavedQuiz>>(data.quizJson, type) ?: emptyList()
+    } catch (e: Exception) {
+        emptyList()
+    }
 
     Scaffold(
         topBar = {
@@ -61,9 +65,9 @@ fun McqDetailScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             mcqList.forEachIndexed { index, mcq ->
-                val selected = mcq.selectedAnswer ?: ""
-                val correct = selected.startsWith(mcq.answer.trim()) ||
-                        selected.startsWith("${mcq.answer.trim()})")
+                val answer = mcq.answer.trim()
+                val selected = mcq.selectedAnswer.orEmpty()
+                val correct = answer.isNotBlank() && (selected.startsWith(answer) || selected.startsWith("$answer)"))
 
                 Card(
                     modifier = Modifier

@@ -60,6 +60,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,6 +83,8 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.io.File
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,6 +97,7 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
     val isTablet = screenWidth >= 600
     val paddingSize = if (isTablet) 32.dp else 16.dp
     val maxContentWidth = 720.dp
+    val scope = rememberCoroutineScope()
 
     var isGenerating by remember { mutableStateOf(false) }
     var isQuizLoading by remember { mutableStateOf(false) }
@@ -814,6 +818,8 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
                                     Button(
                                         onClick = {
 
+                                            if (isQuizLoading) return@Button
+
                                             isQuizLoading = true
 
                                             val finalDifficulty =
@@ -828,9 +834,14 @@ fun GenerateScreen(navController: NavController, vm: StudyViewModel, settingsVm:
                                                 finalDifficulty
                                             )
 
-                                            navController.navigate(Routes.Quiz.route)
+                                            scope.launch {
 
-                                            isQuizLoading = false
+                                                delay(8500)
+
+                                                isQuizLoading = false
+
+                                                navController.navigate(Routes.Quiz.route)
+                                            }
                                         },
                                         enabled = !isQuizLoading,
                                         modifier = Modifier.fillMaxWidth(),

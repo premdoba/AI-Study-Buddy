@@ -23,6 +23,7 @@ import com.nextgendevs.quicknotes.viewmodel.StudyViewModel
 import com.nextgendevs.quicknotes.viewmodel.UiState
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,18 +36,32 @@ fun QuizScreen(navController: NavController, vm: StudyViewModel) {
     val maxContentWidth = 720.dp
 
     val scope = rememberCoroutineScope()
+    var isNewQuizLoading by rememberSaveable { mutableStateOf(false) }
 
     val state by vm.uiState.collectAsState()
 
     if (state !is UiState.Success) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No quiz available. Please generate first.")
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No quiz available. Please generate quiz again.")
         }
         return
     }
 
     val notes = (state as UiState.Success).notes
     val mcqs = notes.mcqs
+
+    if (mcqs.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No quiz questions available. Please generate the quiz again.")
+        }
+        return
+    }
 
     var currentIndex by rememberSaveable { mutableStateOf(0) }
     var submitted by rememberSaveable { mutableStateOf(false) }
@@ -129,7 +144,8 @@ fun QuizScreen(navController: NavController, vm: StudyViewModel) {
 
                 if (!submitted) {
 
-                    val mcq = mcqs[currentIndex]
+                    val safeIndex = currentIndex.coerceIn(0, mcqs.lastIndex)
+                    val mcq = mcqs[safeIndex]
 
                     Column(
                         modifier = Modifier
@@ -320,13 +336,44 @@ fun QuizScreen(navController: NavController, vm: StudyViewModel) {
 
                         Button(
                             onClick = {
-                                vm.refreshMcqs(vm.lastInputText, vm.lastMcqDifficulty)
-                                navController.popBackStack()
-                                navController.navigate("quiz")
+
+                                if (isNewQuizLoading) return@Button
+
+                                isNewQuizLoading = true
+
+                                vm.refreshMcqs(
+                                    vm.lastInputText,
+                                    vm.lastMcqDifficulty
+                                )
+
+                                scope.launch {
+
+                                    delay(9500)
+
+                                    isNewQuizLoading = false
+
+                                    navController.popBackStack()
+                                    navController.navigate("quiz")
+                                }
                             },
+                            enabled = !isNewQuizLoading,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("New Quiz")
+
+                            if (isNewQuizLoading) {
+
+                                LinearProgressIndicator(
+                                    modifier = Modifier
+                                        .width(80.dp)
+                                        .height(6.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+
+                            } else {
+
+                                Text("New Quiz")
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
